@@ -8,13 +8,17 @@ import {
 } from '@livekit/components-react';
 import { BackgroundBlur, VirtualBackground } from '@livekit/track-processors';
 import { isLocalTrack, LocalTrackPublication, Track } from 'livekit-client';
-import Desk from '../public/background-images/samantha-gades-BlIhVfXbi9s-unsplash.jpg';
-import Nature from '../public/background-images/ali-kazal-tbw_KQE3Cbg-unsplash.jpg';
 
-// Background image paths
+// Background image paths (No more imports from /public)
 const BACKGROUND_IMAGES = [
-  { name: 'Desk', path: Desk },
-  { name: 'Nature', path: Nature },
+  {
+    name: 'Desk',
+    path: '/background-images/samantha-gades-BlIhVfXbi9s-unsplash.jpg',
+  },
+  {
+    name: 'Nature',
+    path: '/background-images/ali-kazal-tbw_KQE3Cbg-unsplash.jpg',
+  },
 ];
 
 // Background options
@@ -22,17 +26,18 @@ type BackgroundType = 'none' | 'blur' | 'image';
 
 export function CameraSettings() {
   const { cameraTrack, localParticipant } = useLocalParticipant();
+
   const [backgroundType, setBackgroundType] = React.useState<BackgroundType>(
     (cameraTrack as LocalTrackPublication)?.track?.getProcessor()?.name === 'background-blur'
       ? 'blur'
-      : (cameraTrack as LocalTrackPublication)?.track?.getProcessor()?.name === 'virtual-background'
+      : (cameraTrack as LocalTrackPublication)?.track?.getProcessor()?.name ===
+        'virtual-background'
         ? 'image'
-        : 'none',
+        : 'none'
   );
 
-  const [virtualBackgroundImagePath, setVirtualBackgroundImagePath] = React.useState<string | null>(
-    null,
-  );
+  const [virtualBackgroundImagePath, setVirtualBackgroundImagePath] =
+    React.useState<string | null>(null);
 
   const camTrackRef: TrackReference | undefined = React.useMemo(() => {
     return cameraTrack
@@ -85,6 +90,7 @@ export function CameraSettings() {
       <div style={{ marginTop: '10px' }}>
         <div style={{ marginBottom: '8px' }}>Background Effects</div>
         <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          {/* No Background */}
           <button
             onClick={() => selectBackground('none')}
             className="lk-button"
@@ -97,6 +103,7 @@ export function CameraSettings() {
             None
           </button>
 
+          {/* Blur Background */}
           <button
             onClick={() => selectBackground('blur')}
             className="lk-button"
@@ -119,7 +126,6 @@ export function CameraSettings() {
                 bottom: 0,
                 backgroundColor: '#e0e0e0',
                 filter: 'blur(8px)',
-                zIndex: 0,
               }}
             />
             <span
@@ -136,22 +142,23 @@ export function CameraSettings() {
             </span>
           </button>
 
+          {/* Image Backgrounds */}
           {BACKGROUND_IMAGES.map((image) => (
             <button
-              key={image.path.src}
-              onClick={() => selectBackground('image', image.path.src)}
+              key={image.path}
+              onClick={() => selectBackground('image', image.path)}
               className="lk-button"
               aria-pressed={
-                backgroundType === 'image' && virtualBackgroundImagePath === image.path.src
+                backgroundType === 'image' && virtualBackgroundImagePath === image.path
               }
               style={{
-                backgroundImage: `url(${image.path.src})`,
+                backgroundImage: `url(${image.path})`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 width: '80px',
                 height: '60px',
                 border:
-                  backgroundType === 'image' && virtualBackgroundImagePath === image.path.src
+                  backgroundType === 'image' && virtualBackgroundImagePath === image.path
                     ? '2px solid #0090ff'
                     : '1px solid #d1d1d1',
               }}
