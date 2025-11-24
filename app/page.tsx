@@ -9,12 +9,8 @@ export default function Page() {
     <>
       <main className={styles.main} data-lk-theme="default">
         <div className="header">
-          <img src="/images/livekit-meet-home.svg" alt="LiveKit Meet" width="360" height="45" />
           <h2>
-            Custom Zoom Clone powered by{' '}
-            <a href="https://livekit.io" rel="noopener">
-              LiveKit
-            </a>
+            Custom Zoom {' '}
             .
           </h2>
         </div>
