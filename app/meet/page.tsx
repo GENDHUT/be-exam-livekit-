@@ -12,7 +12,7 @@ function Tabs(props: React.PropsWithChildren<{}>) {
   const router = useRouter();
   function onTabSelected(index: number) {
     const tab = index === 1 ? 'custom' : 'demo';
-    router.push(`/?tab=${tab}`);
+    router.push(`/meet?tab=${tab}`);
   }
 
   let tabs = React.Children.map(props.children, (child, index) => {
@@ -54,7 +54,7 @@ function DemoMeetingTab(props: { label: string }) {
   };
   return (
     <div className={styles.tabContent}>
-      <p style={{ margin: 0 }}>Try LiveKit Meet for free with our live demo project.</p>
+      <p style={{ margin: 0 }}>Try demo project.</p>
       <button style={{ marginTop: '1rem' }} className="lk-button" onClick={startMeeting}>
         Start Meeting
       </button>
@@ -106,7 +106,7 @@ function CustomConnectionTab(props: { label: string }) {
   return (
     <form className={styles.tabContent} onSubmit={onSubmit}>
       <p style={{ marginTop: 0 }}>
-        Connect LiveKit Meet with a custom server using LiveKit Cloud or LiveKit Server.
+        Connect Meet Server.
       </p>
       <input
         id="serverUrl"
@@ -165,17 +165,13 @@ export default function Page() {
     <>
       <main className={styles.main} data-lk-theme="default">
         <div className="header">
-          <img src="/images/livekit-meet-home.svg" alt="LiveKit Meet" width="360" height="45" />
           <h2>
-            Open source video conferencing app built on{' '}
+            Meet BY{' '}
             <a href="https://github.com/livekit/components-js?ref=meet" rel="noopener">
-              LiveKit&nbsp;Components
+              GENDHUT
             </a>
             ,{' '}
-            <a href="https://livekit.io/cloud?ref=meet" rel="noopener">
-              LiveKit&nbsp;Cloud
-            </a>{' '}
-            and Next.js.
+            
           </h2>
         </div>
         <Suspense fallback="Loading">
@@ -185,17 +181,7 @@ export default function Page() {
           </Tabs>
         </Suspense>
       </main>
-      <footer data-lk-theme="default">
-        Hosted on{' '}
-        <a href="https://livekit.io/cloud?ref=meet" rel="noopener">
-          LiveKit Cloud
-        </a>
-        . Source code on{' '}
-        <a href="https://github.com/livekit/meet?ref=meet" rel="noopener">
-          GitHub
-        </a>
-        .
-      </footer>
+      
     </>
   );
 }

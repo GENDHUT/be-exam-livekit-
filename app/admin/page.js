@@ -9,6 +9,10 @@ export default function LiveKitTokenGenerator() {
   const [tokensData, setTokensData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
+  // === ADDED ===
+  const [activeRooms, setActiveRooms] = useState([]);
+  const [roomsLoading, setRoomsLoading] = useState(false);
+
   // Scroll to top when tokens are generated
   useEffect(() => {
     if (tokensData.length > 0) {
@@ -61,21 +65,82 @@ export default function LiveKitTokenGenerator() {
     setTokensData([]);
   };
 
+  // === ADDED: Fetch active rooms ===
+  const loadActiveRooms = async () => {
+    try {
+      setRoomsLoading(true);
+      const res = await fetch("/api/livekit-token", {
+        method: "GET",
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert("Failed to load active rooms");
+        return;
+      }
+
+      setActiveRooms(data.activeRooms || []);
+    } catch (err) {
+      console.error(err);
+      alert("Error loading rooms");
+    } finally {
+      setRoomsLoading(false);
+    }
+  };
+
+ // === NEW: View room in new tab (Supervisor Auto-number 1–10) ===
+const viewRoom = async (room) => {
+  try {
+    const res = await fetch("/api/livekit-token", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        room,
+        role: "pengawas",   // 🔥 GUNAKAN ROLE UNTUK AKTIFKAN FITUR BARU
+      }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data.error || "Failed to generate supervisor token");
+      return;
+    }
+
+    // 🔥 Ambil data token dan nomor pengawas dari API
+    const tokenData = data.tokens[0];
+    const token = tokenData.token;
+    const livekitUrl = tokenData.roomUrl;
+    const identity = tokenData.name; // contoh: pengawas-1
+
+    // 🔥 Buka halaman viewer
+    const url = `https://be-exam-livekit.vercel.app/custom?room=${room}&token=${token}&liveKitUrl=${encodeURIComponent(livekitUrl)}&identity=${identity}`;
+
+    window.open(url, "_blank");
+  } catch (err) {
+    console.error(err);
+    alert("Error opening supervisor view");
+  }
+};
+
+
+
   return (
     <div
       className={styles.main}
       data-lk-theme="default"
       style={{
-        minHeight: "auto",   // ← FIX
-        height: "auto",      // ← FIX
-        overflow: "visible", // ← FIX
+        minHeight: "auto",
+        height: "auto",
+        overflow: "visible",
       }}
     >
       <div className="header">
         <h2>
-          Token Generator for{" "}
-          <a href="https://github.com/livekit/components-js" rel="noopener">
-            LiveKit&nbsp;Components
+          Token Generator{" "}
+          <a href="https://github.com/gendhut" rel="noopener">
+            GENDHUT&nbsp;
           </a>
         </h2>
       </div>
@@ -188,20 +253,6 @@ export default function LiveKitTokenGenerator() {
               </div>
             ))}
           </div>
-
-          <div style={{
-            textAlign: 'center',
-            marginTop: '30px',
-            padding: '20px',
-            backgroundColor: 'var(--lk-bg2)',
-            borderRadius: '12px',
-            border: '1px solid var(--lk-border)'
-          }}>
-            <p style={{ margin: 0, fontSize: '14px', opacity: 0.8, lineHeight: '1.5' }}>
-              <strong>Usage Instructions:</strong> These tokens allow participants to join your
-              LiveKit room. Each token is valid for 1 hour.
-            </p>
-          </div>
         </div>
       )}
 
@@ -299,10 +350,93 @@ export default function LiveKitTokenGenerator() {
         </div>
       </div>
 
+      {/* === ACTIVE ROOMS === */}
+      <div style={{ marginTop: "4rem", width: "100%" }}>
+        <h3>📡 Active Rooms</h3>
+        <p style={{ opacity: 0.7 }}>
+          Klik tombol di bawah untuk melihat semua room yang sedang aktif.
+        </p>
+
+        <button
+          onClick={loadActiveRooms}
+          className="lk-button"
+          style={{
+            padding: "12px 20px",
+            fontSize: "15px",
+            marginBottom: "1.5rem",
+          }}
+        >
+          {roomsLoading ? "Loading..." : "Load Active Rooms"}
+        </button>
+
+        {activeRooms.length > 0 && (
+          <div
+            style={{
+              width: "100%",
+              overflowX: "auto",
+              border: "1px solid var(--lk-border)",
+              borderRadius: "12px",
+              padding: "0",
+            }}
+          >
+            <table
+              style={{
+                width: "100%",
+                borderCollapse: "collapse",
+                fontSize: "14px",
+              }}
+            >
+              <thead>
+                <tr
+                  style={{
+                    backgroundColor: "var(--lk-bg2)",
+                    borderBottom: "1px solid var(--lk-border)",
+                  }}
+                >
+                  <th style={{ padding: "12px" }}>Room Name</th>
+                  <th style={{ padding: "12px" }}>Participants</th>
+                  <th style={{ padding: "12px" }}>Created</th>
+                  <th style={{ padding: "12px" }}>Action</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {activeRooms.map((room, index) => (
+                  <tr
+                    key={index}
+                    style={{
+                      borderBottom: "1px solid var(--lk-border)",
+                    }}
+                  >
+                    <td style={{ padding: "12px" }}>{room.name}</td>
+                    <td style={{ padding: "12px" }}>{room.numParticipants}</td>
+                    <td style={{ padding: "12px" }}>
+                      {new Date(room.creationTime * 1000).toLocaleString()}
+                    </td>
+                    <td style={{ padding: "12px" }}>
+                      <button
+                        className="lk-button"
+                        style={{
+                          padding: "6px 12px",
+                          fontSize: "13px",
+                        }}
+                        onClick={() => viewRoom(room.name)}
+                      >
+                        View
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
       <footer data-lk-theme="default" style={{ marginTop: '3rem' }}>
-        LiveKit Token Generator • Built with{" "}
-        <a href="https://github.com/livekit/components-js" rel="noopener">
-          LiveKit Components
+        Token Generator • Built BY{" "}
+        <a href="https://github.com/gendhut" rel="noopener">
+          GENDHUT
         </a>
       </footer>
 
